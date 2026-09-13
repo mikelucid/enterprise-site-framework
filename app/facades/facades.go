@@ -130,10 +130,14 @@ func Delete(key string) error {
 	return nil
 }
 func Remember(key string, ttl time.Duration, loader func() (string, error)) (string, error) {
-	if v, ok, _ := Get(key); ok {
+	v, ok, err := Get(key)
+	if err != nil {
+		return "", err
+	}
+	if ok {
 		return v, nil
 	}
-	v, err := loader()
+	v, err = loader()
 	if err != nil {
 		return "", err
 	}

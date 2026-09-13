@@ -21,6 +21,8 @@ func (s *Service) Create(ctx context.Context, site domain.Site) (domain.Site, er
 		return domain.Site{}, err
 	}
 	if err := s.provisioner.Provision(ctx, created); err != nil {
+		created.Status = "provision_failed"
+		_, _ = s.repo.Update(ctx, created)
 		return domain.Site{}, err
 	}
 	return created, nil

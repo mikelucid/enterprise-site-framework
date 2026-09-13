@@ -21,4 +21,19 @@ func TestTokenLifecycle(t *testing.T) {
 	if claims.Subject != "user-1" {
 		t.Fatalf("unexpected subject: %s", claims.Subject)
 	}
+	refreshed, err := mgr.RefreshToken(token)
+	if err != nil {
+		t.Fatal(err)
+	}
+	refClaims, err := mgr.ValidateToken(refreshed)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if refClaims.Subject != claims.Subject {
+		t.Fatalf("subject mismatch after refresh: %s != %s", refClaims.Subject, claims.Subject)
+	}
+	mgr.RevokeToken(refClaims.ID)
+	if _, err := mgr.ValidateToken(refreshed); err == nil {
+		t.Fatal("expected revoked token to fail validation")
+	}
 }

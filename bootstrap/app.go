@@ -19,6 +19,7 @@ type registration struct {
 	lifetime Lifetime
 	factory  ServiceFactory
 	instance any
+	mu       sync.Mutex
 }
 
 type ServiceContainer struct {
@@ -66,8 +67,8 @@ func (c *ServiceContainer) Resolve(name string) (any, error) {
 		return nil, fmt.Errorf("service %q is not registered", name)
 	}
 	if reg.lifetime == Singleton {
-		c.mu.Lock()
-		defer c.mu.Unlock()
+		reg.mu.Lock()
+		defer reg.mu.Unlock()
 		if reg.instance == nil {
 			instance, err := reg.factory(c)
 			if err != nil {

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 type Config struct {
@@ -55,7 +56,15 @@ func NewManager(cfg Config) (*Manager, error) {
 
 func (m *Manager) GenerateToken(subject string, roles []string) (string, error) {
 	now := time.Now()
-	claims := Claims{Roles: roles, RegisteredClaims: jwt.RegisteredClaims{Subject: subject, IssuedAt: jwt.NewNumericDate(now), ExpiresAt: jwt.NewNumericDate(now.Add(time.Duration(m.cfg.JWT.Expiration) * time.Second))}}
+	claims := Claims{
+		Roles: roles,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ID:        uuid.NewString(),
+			Subject:   subject,
+			IssuedAt:  jwt.NewNumericDate(now),
+			ExpiresAt: jwt.NewNumericDate(now.Add(time.Duration(m.cfg.JWT.Expiration) * time.Second)),
+		},
+	}
 	var method jwt.SigningMethod = jwt.SigningMethodHS256
 	key := any(m.hsSecret)
 	if m.cfg.JWT.Algorithm == "RS256" {
@@ -68,6 +77,9 @@ func (m *Manager) GenerateToken(subject string, roles []string) (string, error) 
 func (m *Manager) ValidateToken(token string) (*Claims, error) {
 	claims := &Claims{}
 	parsed, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (any, error) {
+		if t.Method.Alg() != m.cfg.JWT.Algorithm {
+			return nil, errors.New("unexpected signing algorithm")
+		}
 		if m.cfg.JWT.Algorithm == "RS256" {
 			return m.rsPublic, nil
 		}

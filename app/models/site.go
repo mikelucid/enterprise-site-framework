@@ -7,7 +7,7 @@ type SiteStatus string
 const (
 	SitePending       SiteStatus = "pending"
 	SiteRunning       SiteStatus = "running"
-	SiteDecommissiond SiteStatus = "decommissioned"
+	SiteDecommissioned SiteStatus = "decommissioned"
 )
 
 type Site struct {
