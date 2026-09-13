@@ -13,10 +13,10 @@ var agentRunCmd = &cobra.Command{
 	Short: "Run the framework automation agent runtime",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		runner := agent.NewRunner()
+		fmt.Println("agent runtime started")
 		if err := runner.Run(context.Background()); err != nil {
 			return err
 		}
-		fmt.Println("agent runtime started")
 		return nil
 	},
 }

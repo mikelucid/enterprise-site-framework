@@ -25,9 +25,9 @@ func (s *Service) Create(ctx context.Context, site domain.Site) (domain.Site, er
 	if err := s.provisioner.Provision(ctx, created); err != nil {
 		created.Status = "provision_failed"
 		if _, updateErr := s.repo.Update(ctx, created); updateErr != nil {
-			return domain.Site{}, fmt.Errorf("provision failed and compensation update failed: %w", errors.Join(err, updateErr))
+			return created, fmt.Errorf("provision failed and compensation update failed: %w", errors.Join(err, updateErr))
 		}
-		return domain.Site{}, err
+		return created, err
 	}
 	return created, nil
 }

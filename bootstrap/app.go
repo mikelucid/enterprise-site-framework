@@ -28,18 +28,25 @@ type ServiceContainer struct {
 }
 
 var globalContainer = NewContainer()
+var globalContainerMu sync.RWMutex
 
 func NewContainer() *ServiceContainer {
 	return &ServiceContainer{services: map[string]*registration{}}
 }
 
-func GlobalContainer() *ServiceContainer { return globalContainer }
+func GlobalContainer() *ServiceContainer {
+	globalContainerMu.RLock()
+	defer globalContainerMu.RUnlock()
+	return globalContainer
+}
 
 func SetGlobalContainer(c *ServiceContainer) {
 	if c == nil {
 		return
 	}
+	globalContainerMu.Lock()
 	globalContainer = c
+	globalContainerMu.Unlock()
 }
 
 func (c *ServiceContainer) Register(name string, lifetime Lifetime, factory ServiceFactory) error {

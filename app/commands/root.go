@@ -11,8 +11,11 @@ var rootCmd = &cobra.Command{
 	Short: "NOVA enterprise site framework",
 }
 
-func Execute() {
+func init() {
 	rootCmd.AddCommand(serveCmd, migrateCmd, migrateFreshCmd, queueListenCmd, seedCmd, tinkerCmd, agentRunCmd)
+}
+
+func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
