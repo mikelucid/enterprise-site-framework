@@ -3,11 +3,12 @@ package facades
 import (
 	"time"
 
+	"github.com/nats-io/nats.go"
 	"github.com/mikelucid/enterprise-site-framework/bootstrap"
 	"github.com/mikelucid/enterprise-site-framework/pkg/ai"
 	"github.com/mikelucid/enterprise-site-framework/pkg/auth"
 	"github.com/mikelucid/enterprise-site-framework/pkg/cache"
-	"github.com/mikelucid/enterprise-site-framework/pkg/queue"
+	"github.com/mikelucid/enterprise-site-framework/pkg/messaging"
 )
 
 func AI() (*ai.Engine, error) { return bootstrap.ResolveAs[*ai.Engine](bootstrap.GlobalContainer(), "ai") }
@@ -55,11 +56,23 @@ func (PaymentFacade) Collect(id string) string { return "collected:" + id }
 func (PaymentFacade) Refund(id string) string  { return "refunded:" + id }
 func (PaymentFacade) Status(id string) string  { return "status:" + id }
 
-func (QueueFacade) Dispatch(job queue.Job) error {
-	_, _ = job, time.Now()
-	return nil
+func (QueueFacade) Dispatch(subject string, payload []byte) error {
+	client, err := bootstrap.ResolveAs[*messaging.Client](bootstrap.GlobalContainer(), "queue")
+	if err != nil {
+		return err
+	}
+	return client.Publish(subject, payload)
 }
-func (QueueFacade) Listen(string, func(queue.Job) error) error { return nil }
+func (QueueFacade) Listen(subject string, handler func([]byte) error) error {
+	client, err := bootstrap.ResolveAs[*messaging.Client](bootstrap.GlobalContainer(), "queue")
+	if err != nil {
+		return err
+	}
+	_, err = client.Subscribe(subject, func(msg *nats.Msg) {
+		_ = handler(msg.Data)
+	})
+	return err
+}
 
 func Recommend(input string) ([]string, error) {
 	e, err := AI()

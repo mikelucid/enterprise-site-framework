@@ -4,7 +4,7 @@ import "gorm.io/datatypes"
 
 type Payment struct {
 	BaseModel
-	PaymentID string         `json:"payment_id" gorm:"uniqueIndex;not null"`
+	ExternalPaymentID string         `json:"external_payment_id" gorm:"uniqueIndex;not null"`
 	SiteID    string         `json:"site_id" gorm:"index;not null"`
 	Amount    float64        `json:"amount" gorm:"not null"`
 	Currency  string         `json:"currency" gorm:"size:8;not null"`

@@ -3,7 +3,10 @@ package auth
 import (
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 
@@ -16,6 +19,8 @@ type Config struct {
 		Secret     string `mapstructure:"secret"`
 		Algorithm  string `mapstructure:"algorithm"`
 		Expiration int64  `mapstructure:"expiration"`
+		PrivateKey string `mapstructure:"private_key"`
+		PublicKey  string `mapstructure:"public_key"`
 	} `mapstructure:"jwt"`
 	RBAC struct {
 		DefaultRole string   `mapstructure:"default_role"`
@@ -42,13 +47,24 @@ func NewManager(cfg Config) (*Manager, error) {
 	if m.cfg.JWT.Algorithm == "" {
 		m.cfg.JWT.Algorithm = "HS256"
 	}
+	if m.cfg.JWT.Algorithm == "HS256" && len(m.hsSecret) == 0 {
+		return nil, errors.New("jwt secret is required for HS256")
+	}
 	if m.cfg.JWT.Algorithm == "RS256" {
-		key, err := rsa.GenerateKey(rand.Reader, 2048)
-		if err != nil {
-			return nil, err
+		if m.cfg.JWT.PrivateKey != "" && m.cfg.JWT.PublicKey != "" {
+			priv, pub, err := parseRSAKeys(m.cfg.JWT.PrivateKey, m.cfg.JWT.PublicKey)
+			if err != nil {
+				return nil, err
+			}
+			m.rsPrivate, m.rsPublic = priv, pub
+		} else {
+			key, err := rsa.GenerateKey(rand.Reader, 2048)
+			if err != nil {
+				return nil, err
+			}
+			m.rsPrivate = key
+			m.rsPublic = &key.PublicKey
 		}
-		m.rsPrivate = key
-		m.rsPublic = &key.PublicKey
 	}
 	if cfg.JWT.Expiration <= 0 {
 		m.cfg.JWT.Expiration = 86400
@@ -111,4 +127,32 @@ func (m *Manager) RevokeToken(jti string) {
 	m.revMu.Lock()
 	m.revocation[jti] = struct{}{}
 	m.revMu.Unlock()
+}
+
+func parseRSAKeys(privatePEM, publicPEM string) (*rsa.PrivateKey, *rsa.PublicKey, error) {
+	privBlock, _ := pem.Decode([]byte(privatePEM))
+	if privBlock == nil {
+		return nil, nil, fmt.Errorf("invalid private key PEM")
+	}
+	privAny, err := x509.ParsePKCS8PrivateKey(privBlock.Bytes)
+	if err != nil {
+		return nil, nil, err
+	}
+	priv, ok := privAny.(*rsa.PrivateKey)
+	if !ok {
+		return nil, nil, fmt.Errorf("private key is not RSA")
+	}
+	pubBlock, _ := pem.Decode([]byte(publicPEM))
+	if pubBlock == nil {
+		return nil, nil, fmt.Errorf("invalid public key PEM")
+	}
+	pubAny, err := x509.ParsePKIXPublicKey(pubBlock.Bytes)
+	if err != nil {
+		return nil, nil, err
+	}
+	pub, ok := pubAny.(*rsa.PublicKey)
+	if !ok {
+		return nil, nil, fmt.Errorf("public key is not RSA")
+	}
+	return priv, pub, nil
 }

@@ -57,3 +57,27 @@ func TestTokenLifecycleRS256(t *testing.T) {
 		t.Fatalf("unexpected subject: %s", claims.Subject)
 	}
 }
+
+func TestAlgorithmMismatchRejected(t *testing.T) {
+	hsCfg := Config{}
+	hsCfg.JWT.Secret = "secret"
+	hsCfg.JWT.Algorithm = "HS256"
+	hsMgr, err := NewManager(hsCfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	token, err := hsMgr.GenerateToken("user-mismatch", []string{"user"})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rsCfg := Config{}
+	rsCfg.JWT.Algorithm = "RS256"
+	rsMgr, err := NewManager(rsCfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := rsMgr.ValidateToken(token); err == nil {
+		t.Fatal("expected algorithm mismatch to fail")
+	}
+}
