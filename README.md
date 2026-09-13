@@ -2,6 +2,7 @@
 
 ## 1. Project overview
 NOVA Enterprise Multi-Site Management Framework using Gin, gRPC, GORM, and GWAV/OpenAI-ready AI integration.
+This repository also includes an agent runtime scaffold (`agent:run`) so automation agents can live inside the framework and manage build/ops workflows.
 
 ## 2. Architecture diagram
 - API Gateway (`cmd/api-gateway`) fronts service modules.
@@ -10,7 +11,7 @@ NOVA Enterprise Multi-Site Management Framework using Gin, gRPC, GORM, and GWAV/
 - Bootstrap container (`bootstrap/app.go`) provides DI and provider registration.
 
 ## 3. Technology stack
-- Go 1.21
+- Go 1.25
 - Gin HTTP framework
 - gRPC/protobuf APIs
 - GORM + PostgreSQL
@@ -44,6 +45,7 @@ See the repository tree for a clean-architecture Go layout with `cmd/*` service 
 - Add services in `internal/<service>` with domain/usecase/adapter/port layers.
 - Register providers in `bootstrap/providers.go`.
 - Add AI model adapters in `internal/ai/adapter` and expose via facades.
+- Extend the internal automation agent in `internal/agent` and run it with `go run ./cmd/agent-runner agent:run`.
 
 ## 8. Testing
 ```bash
