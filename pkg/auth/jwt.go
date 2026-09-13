@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
@@ -51,20 +50,14 @@ func NewManager(cfg Config) (*Manager, error) {
 		return nil, errors.New("jwt secret is required for HS256")
 	}
 	if m.cfg.JWT.Algorithm == "RS256" {
-		if m.cfg.JWT.PrivateKey != "" && m.cfg.JWT.PublicKey != "" {
-			priv, pub, err := parseRSAKeys(m.cfg.JWT.PrivateKey, m.cfg.JWT.PublicKey)
-			if err != nil {
-				return nil, err
-			}
-			m.rsPrivate, m.rsPublic = priv, pub
-		} else {
-			key, err := rsa.GenerateKey(rand.Reader, 2048)
-			if err != nil {
-				return nil, err
-			}
-			m.rsPrivate = key
-			m.rsPublic = &key.PublicKey
+		if m.cfg.JWT.PrivateKey == "" || m.cfg.JWT.PublicKey == "" {
+			return nil, errors.New("rsa private_key and public_key are required for RS256")
 		}
+		priv, pub, err := parseRSAKeys(m.cfg.JWT.PrivateKey, m.cfg.JWT.PublicKey)
+		if err != nil {
+			return nil, err
+		}
+		m.rsPrivate, m.rsPublic = priv, pub
 	}
 	if cfg.JWT.Expiration <= 0 {
 		m.cfg.JWT.Expiration = 86400
@@ -134,13 +127,29 @@ func parseRSAKeys(privatePEM, publicPEM string) (*rsa.PrivateKey, *rsa.PublicKey
 	if privBlock == nil {
 		return nil, nil, fmt.Errorf("invalid private key PEM")
 	}
-	privAny, err := x509.ParsePKCS8PrivateKey(privBlock.Bytes)
-	if err != nil {
-		return nil, nil, err
-	}
-	priv, ok := privAny.(*rsa.PrivateKey)
-	if !ok {
-		return nil, nil, fmt.Errorf("private key is not RSA")
+	var priv *rsa.PrivateKey
+	switch privBlock.Type {
+	case "RSA PRIVATE KEY":
+		pkcs1, err := x509.ParsePKCS1PrivateKey(privBlock.Bytes)
+		if err != nil {
+			return nil, nil, err
+		}
+		priv = pkcs1
+	default:
+		privAny, err := x509.ParsePKCS8PrivateKey(privBlock.Bytes)
+		if err != nil {
+			if pkcs1, e := x509.ParsePKCS1PrivateKey(privBlock.Bytes); e == nil {
+				priv = pkcs1
+			} else {
+				return nil, nil, err
+			}
+		} else {
+			var ok bool
+			priv, ok = privAny.(*rsa.PrivateKey)
+			if !ok {
+				return nil, nil, fmt.Errorf("private key is not RSA")
+			}
+		}
 	}
 	pubBlock, _ := pem.Decode([]byte(publicPEM))
 	if pubBlock == nil {

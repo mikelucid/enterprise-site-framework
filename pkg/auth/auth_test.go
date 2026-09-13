@@ -1,6 +1,12 @@
 package auth
 
-import "testing"
+import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
+	"testing"
+)
 
 func TestTokenLifecycle(t *testing.T) {
 	cfg := Config{}
@@ -36,11 +42,17 @@ func TestTokenLifecycle(t *testing.T) {
 	if _, err := mgr.ValidateToken(refreshed); err == nil {
 		t.Fatal("expected revoked token to fail validation")
 	}
+	if _, err := mgr.RefreshToken(refreshed); err == nil {
+		t.Fatal("expected refresh of revoked token to fail")
+	}
 }
 
 func TestTokenLifecycleRS256(t *testing.T) {
+	privateKey, publicKey := generateRSAPEM(t)
 	cfg := Config{}
 	cfg.JWT.Algorithm = "RS256"
+	cfg.JWT.PrivateKey = privateKey
+	cfg.JWT.PublicKey = publicKey
 	mgr, err := NewManager(cfg)
 	if err != nil {
 		t.Fatal(err)
@@ -71,8 +83,11 @@ func TestAlgorithmMismatchRejected(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	privateKey, publicKey := generateRSAPEM(t)
 	rsCfg := Config{}
 	rsCfg.JWT.Algorithm = "RS256"
+	rsCfg.JWT.PrivateKey = privateKey
+	rsCfg.JWT.PublicKey = publicKey
 	rsMgr, err := NewManager(rsCfg)
 	if err != nil {
 		t.Fatal(err)
@@ -80,4 +95,19 @@ func TestAlgorithmMismatchRejected(t *testing.T) {
 	if _, err := rsMgr.ValidateToken(token); err == nil {
 		t.Fatal("expected algorithm mismatch to fail")
 	}
+}
+
+func generateRSAPEM(t *testing.T) (string, string) {
+	t.Helper()
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		t.Fatal(err)
+	}
+	priv := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(key)})
+	pubBytes, err := x509.MarshalPKIXPublicKey(&key.PublicKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pub := pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: pubBytes})
+	return string(priv), string(pub)
 }
