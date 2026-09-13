@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"errors"
+	"sync"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -33,11 +34,15 @@ type Manager struct {
 	rsPrivate  *rsa.PrivateKey
 	rsPublic   *rsa.PublicKey
 	revocation map[string]struct{}
+	revMu      sync.RWMutex
 }
 
 func NewManager(cfg Config) (*Manager, error) {
 	m := &Manager{cfg: cfg, hsSecret: []byte(cfg.JWT.Secret), revocation: map[string]struct{}{}}
-	if cfg.JWT.Algorithm == "RS256" {
+	if m.cfg.JWT.Algorithm == "" {
+		m.cfg.JWT.Algorithm = "HS256"
+	}
+	if m.cfg.JWT.Algorithm == "RS256" {
 		key, err := rsa.GenerateKey(rand.Reader, 2048)
 		if err != nil {
 			return nil, err
@@ -47,9 +52,6 @@ func NewManager(cfg Config) (*Manager, error) {
 	}
 	if cfg.JWT.Expiration <= 0 {
 		m.cfg.JWT.Expiration = 86400
-	}
-	if m.cfg.JWT.Algorithm == "" {
-		m.cfg.JWT.Algorithm = "HS256"
 	}
 	return m, nil
 }
@@ -88,7 +90,10 @@ func (m *Manager) ValidateToken(token string) (*Claims, error) {
 	if err != nil || !parsed.Valid {
 		return nil, errors.New("invalid token")
 	}
-	if _, revoked := m.revocation[claims.ID]; revoked {
+	m.revMu.RLock()
+	_, revoked := m.revocation[claims.ID]
+	m.revMu.RUnlock()
+	if revoked {
 		return nil, errors.New("token revoked")
 	}
 	return claims, nil
@@ -102,4 +107,8 @@ func (m *Manager) RefreshToken(token string) (string, error) {
 	return m.GenerateToken(claims.Subject, claims.Roles)
 }
 
-func (m *Manager) RevokeToken(jti string) { m.revocation[jti] = struct{}{} }
+func (m *Manager) RevokeToken(jti string) {
+	m.revMu.Lock()
+	m.revocation[jti] = struct{}{}
+	m.revMu.Unlock()
+}

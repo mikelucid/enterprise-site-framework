@@ -37,3 +37,23 @@ func TestTokenLifecycle(t *testing.T) {
 		t.Fatal("expected revoked token to fail validation")
 	}
 }
+
+func TestTokenLifecycleRS256(t *testing.T) {
+	cfg := Config{}
+	cfg.JWT.Algorithm = "RS256"
+	mgr, err := NewManager(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	token, err := mgr.GenerateToken("user-rs", []string{"manager"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	claims, err := mgr.ValidateToken(token)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if claims.Subject != "user-rs" {
+		t.Fatalf("unexpected subject: %s", claims.Subject)
+	}
+}

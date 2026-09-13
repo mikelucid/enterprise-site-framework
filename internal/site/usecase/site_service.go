@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/mikelucid/enterprise-site-framework/internal/site/domain"
 )
@@ -22,7 +23,9 @@ func (s *Service) Create(ctx context.Context, site domain.Site) (domain.Site, er
 	}
 	if err := s.provisioner.Provision(ctx, created); err != nil {
 		created.Status = "provision_failed"
-		_, _ = s.repo.Update(ctx, created)
+		if _, updateErr := s.repo.Update(ctx, created); updateErr != nil {
+			return domain.Site{}, fmt.Errorf("provision failed: %w (also failed to persist failure status: %v)", err, updateErr)
+		}
 		return domain.Site{}, err
 	}
 	return created, nil

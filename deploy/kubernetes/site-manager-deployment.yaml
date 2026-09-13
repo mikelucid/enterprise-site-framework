@@ -15,4 +15,4 @@ spec:
     spec:
       containers:
       - name: site-manager
-        image: yourorg/enterprise-framework:latest
+        image: yourorg/enterprise-framework:0.1.0

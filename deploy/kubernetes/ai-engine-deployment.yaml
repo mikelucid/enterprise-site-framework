@@ -15,4 +15,4 @@ spec:
     spec:
       containers:
       - name: ai-engine
-        image: yourorg/enterprise-framework:latest
+        image: yourorg/enterprise-framework:0.1.0

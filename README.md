@@ -38,7 +38,7 @@ YAML configuration files are in `config/`:
 Environment variables override YAML values.
 
 ## 6. Project structure
-See the repository tree for Laravel-style Go layout with `app`, `bootstrap`, `internal`, `pkg`, `database`, `deploy`, and `api/proto`.
+See the repository tree for a clean-architecture Go layout with `cmd/*` service entrypoints, domain-driven `internal/*` modules, shared `pkg/*` libraries, and `app`/`bootstrap` orchestration layers.
 
 ## 7. Extending
 - Add services in `internal/<service>` with domain/usecase/adapter/port layers.

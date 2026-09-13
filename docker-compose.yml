@@ -20,7 +20,7 @@ services:
       - redis_data:/data
 
   nats:
-    image: nats:latest
+    image: nats:2.10-alpine
     ports:
       - "4222:4222"
       - "6222:6222"
