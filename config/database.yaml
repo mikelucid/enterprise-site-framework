@@ -1,0 +1,11 @@
+database:
+  driver: postgres
+  host: ${DB_HOST:localhost}
+  port: ${DB_PORT:5432}
+  name: ${DB_NAME:enterprise}
+  user: ${DB_USER:postgres}
+  password: ${DB_PASSWORD:}
+  ssl_mode: ${DB_SSL_MODE:disable}
+  max_idle_conns: 10
+  max_open_conns: 100
+  log_level: ${DB_LOG_LEVEL:silent}

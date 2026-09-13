@@ -1,0 +1,12 @@
+ai:
+  default_model: gwav
+  models:
+    gwav:
+      type: gwav
+      path: ${GWAV_PATH:resources/gwav}
+      enabled: true
+    openai:
+      type: openai
+      api_key: ${OPENAI_API_KEY:}
+      enabled: ${OPENAI_ENABLED:false}
+      model: gpt-4

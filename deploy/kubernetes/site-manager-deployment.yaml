@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: site-manager
+  namespace: enterprise-framework
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: site-manager
+  template:
+    metadata:
+      labels:
+        app: site-manager
+    spec:
+      containers:
+      - name: site-manager
+        image: yourorg/enterprise-framework:0.1.0

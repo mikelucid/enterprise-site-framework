@@ -1,88 +1,66 @@
-# enterprise-site-framework
+# Enterprise Site Framework
 
-Hybrid Golang platform that combines:
-- **Enterprise multi-site management** (provisioning, deployment, operations, finance, HR/legal, lobbying)
-- **NOVA creator economy** (real-person likeness, collaborative characters, royalty splits, licensing, consent)
+## 1. Project overview
+NOVA Enterprise Multi-Site Management Framework using Gin, gRPC, GORM, and GWAV/OpenAI-ready AI integration.
+This repository also includes an agent runtime scaffold (`agent:run`) so automation agents can live inside the framework and manage build/ops workflows.
 
-## Framework Decision: Gin vs Fiber vs Echo
+## 2. Architecture diagram
+- API Gateway (`cmd/api-gateway`) fronts service modules.
+- Domain modules follow clean architecture under `internal/*`.
+- Shared cross-cutting libraries live in `pkg/*`.
+- Bootstrap container (`bootstrap/app.go`) provides DI and provider registration.
 
-**Selected: Gin**
+## 3. Technology stack
+- Go 1.25
+- Gin HTTP framework
+- gRPC/protobuf APIs
+- GORM + PostgreSQL
+- NATS messaging
+- Zap logging
+- OpenTelemetry tracing
 
-This project standardizes on **Gin** to align with the architecture requirements and enable straightforward integration with **gRPC-gateway**, middleware, and OpenAPI tooling.
-
-## Target Architecture (Golang)
-
-- **HTTP:** Gin
-- **RPC:** gRPC + Protobuf
-- **Data:** PostgreSQL + Redis
-- **Async:** NATS
-- **Infra:** Kubernetes + Helm + Terraform (AWS/GCP/Azure)
-- **Security:** JWT, RBAC, mTLS
-- **Observability:** OpenTelemetry, Prometheus, Jaeger
-
-## Planned Project Structure (Clean Architecture)
-
-```text
-cmd/
-  gateway/
-  sitectl/
-  creatorctl/
-internal/
-  shared/
-    config logger errors auth db messaging validators contracts
-  services/
-    site-manager
-    infra-provisioner
-    ai-engine
-    budget-manager
-    ads-manager
-    payment-collector
-    accounting
-    financial-reports
-    tax-manager
-    hr-team-manager
-    legal-compliance
-    lobbying-manager
-    legislation-tracker
-    creator-service
-    real-person-model
-    character-management
-    consent-agreement
-    royalty-engine
-    anti-impersonation
-    usage-analytics
-api/
-  proto/
-  openapi/
-deploy/
-  helm/
-  k8s/
-infra/
-  terraform/
-migrations/
+## 4. Quick start
+```bash
+cp .env.example .env
+make setup
+make test
+make build
+make docker-up
 ```
 
-## Milestones and Estimated Completion Dates (1 FTE, 40 hrs/week)
+## 5. Configuration
+YAML configuration files are in `config/`:
+- `app.yaml`
+- `database.yaml`
+- `ai.yaml`
+- `queue.yaml`
+- `auth.yaml`
 
-Start date baseline: **2026-09-07**
+Environment variables override YAML values.
 
-| Milestone | Scope | Window | Estimated Completion |
-|---|---|---|---|
-| M1: Foundation & DevOps | Scaffolding, shared libs, migrations, Docker, CI/CD skeleton | Weeks 1–4 | **2026-10-04** |
-| M2: Enterprise Core Services | Site manager, infra provisioner, AI engine, budget, ads services | Weeks 5–12 | **2026-11-29** |
-| M3: Financial Services | Payments, accounting, reports, tax, invoices/receipts | Weeks 13–18 | **2027-01-10** |
-| M4: HR & Legal | Hiring/payroll/onboarding, legal compliance, document automation | Weeks 19–24 | **2027-02-21** |
-| M5: Lobbying & Gov Relations | Lobbying tracking, legislation APIs, compliance reporting | Weeks 25–28 | **2027-03-21** |
-| M6: Creator Economy & Likeness | Real-person onboarding/KYC, consent, royalty split engine, dashboards | Weeks 29–40 | **2027-06-13** |
-| M7: Integration & Gateway | Gin gateway, auth, throttling, service mesh, integration tests | Weeks 41–44 | **2027-07-11** |
-| M8: Infra & Deployment | Helm/K8s/Terraform production deployment stack | Weeks 45–50 | **2027-08-22** |
-| M9: Testing, Docs & Launch | >75% critical coverage, E2E, API docs, runbooks, launch readiness | Weeks 51–56 | **2027-10-03** |
+## 6. Project structure
+See the repository tree for a clean-architecture Go layout with `cmd/*` service entrypoints, domain-driven `internal/*` modules, shared `pkg/*` libraries, and `app`/`bootstrap` orchestration layers.
 
-## Success Targets
+## 7. Extending
+- Add services in `internal/<service>` with domain/usecase/adapter/port layers.
+- Register providers in `bootstrap/providers.go`.
+- Add AI model adapters in `internal/ai/adapter` and expose via facades.
+- Extend the internal automation agent in `internal/agent` and run it with `go run ./cmd/agent-runner agent:run`.
 
-- 15+ services with gRPC + REST exposure
-- Clean migrations on fresh PostgreSQL
-- Kubernetes deployment healthy across core services
-- E2E validation for payment, hiring, creator onboarding, royalty distribution
-- Security enforcement: mTLS + JWT + RBAC
-- Full CI/CD checks green before merge
+## 8. Testing
+```bash
+make test
+```
+Shared libraries include focused unit tests in their package directories.
+
+## 9. Deployment
+- Docker: `Dockerfile`, `docker-compose.yml`
+- Kubernetes manifests: `deploy/kubernetes`
+- Helm chart seed: `deploy/helm/enterprise-framework`
+- Terraform module seeds: `deploy/terraform/{aws,gcp,azure}`
+
+## 10. Contributing
+1. Create a branch
+2. Make focused changes
+3. Run tests/lint/build locally
+4. Open PR with clear scope and verification details

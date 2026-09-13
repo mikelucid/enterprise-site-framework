@@ -1,0 +1,5 @@
+queue:
+  driver: nats
+  url: ${NATS_URL:nats://localhost:4222}
+  subject_prefix: ${QUEUE_PREFIX:esf}
+  workers: ${QUEUE_WORKERS:5}
