@@ -1,0 +1,12 @@
+auth:
+  jwt:
+    secret: ${JWT_SECRET:dev-secret-key}
+    algorithm: HS256
+    expiration: ${JWT_EXPIRATION:86400}
+  rbac:
+    default_role: user
+    roles:
+      - admin
+      - manager
+      - user
+      - viewer

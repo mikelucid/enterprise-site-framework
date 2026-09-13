@@ -1,0 +1,32 @@
+syntax = "proto3";
+package site.v1;
+
+service SiteService {
+  rpc CreateSite(CreateSiteRequest) returns (CreateSiteResponse);
+  rpc GetSite(GetSiteRequest) returns (GetSiteResponse);
+  rpc ListSites(ListSitesRequest) returns (ListSitesResponse);
+  rpc UpdateSite(UpdateSiteRequest) returns (UpdateSiteResponse);
+  rpc DecommissionSite(DecommissionSiteRequest) returns (DecommissionSiteResponse);
+}
+
+message Site {
+  string id = 1;
+  string name = 2;
+  string domain = 3;
+  string template_id = 4;
+  string status = 5;
+  map<string, string> config = 6;
+  string created_at = 7;
+  string updated_at = 8;
+}
+
+message CreateSiteRequest { string name = 1; string domain = 2; string template_id = 3; map<string,string> config = 4; }
+message CreateSiteResponse { Site site = 1; }
+message GetSiteRequest { string id = 1; }
+message GetSiteResponse { Site site = 1; }
+message ListSitesRequest { int32 page = 1; int32 per_page = 2; }
+message ListSitesResponse { repeated Site sites = 1; }
+message UpdateSiteRequest { Site site = 1; }
+message UpdateSiteResponse { Site site = 1; }
+message DecommissionSiteRequest { string id = 1; }
+message DecommissionSiteResponse { bool success = 1; }

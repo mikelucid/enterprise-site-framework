@@ -1,0 +1,9 @@
+syntax = "proto3";
+package lobbying.v1;
+
+service LobbyingService {
+  rpc Health(HealthRequest) returns (HealthResponse);
+}
+
+message HealthRequest {}
+message HealthResponse { string status = 1; }

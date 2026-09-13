@@ -1,0 +1,23 @@
+syntax = "proto3";
+package ai.v1;
+
+service AIService {
+  rpc GetRecommendations(GetRecommendationsRequest) returns (GetRecommendationsResponse);
+  rpc RecordFeedback(RecordFeedbackRequest) returns (RecordFeedbackResponse);
+}
+
+message Recommendation {
+  string id = 1;
+  string type = 2;
+  string action = 3;
+  string description = 4;
+  float confidence = 5;
+  string site_id = 6;
+  map<string, string> metadata = 7;
+  string created_at = 8;
+}
+
+message GetRecommendationsRequest { string domain = 1; string site_id = 2; int32 limit = 3; }
+message GetRecommendationsResponse { repeated Recommendation recommendations = 1; }
+message RecordFeedbackRequest { string recommendation_id = 1; bool accepted = 2; }
+message RecordFeedbackResponse { bool success = 1; }

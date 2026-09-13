@@ -1,0 +1,17 @@
+app:
+  name: enterprise-site-framework
+  version: 0.1.0
+  environment: ${APP_ENV:local}
+  debug: ${APP_DEBUG:true}
+
+server:
+  host: ${SERVER_HOST:0.0.0.0}
+  port: ${SERVER_PORT:8000}
+
+services:
+  - name: site_manager
+    port: 8001
+    grpc_port: 50001
+  - name: ai_engine
+    port: 8002
+    grpc_port: 50002
