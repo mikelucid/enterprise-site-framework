@@ -11,7 +11,6 @@ import (
 	"github.com/mikelucid/enterprise-site-framework/pkg/events"
 	"github.com/mikelucid/enterprise-site-framework/pkg/logger"
 	"github.com/mikelucid/enterprise-site-framework/pkg/messaging"
-	"github.com/mikelucid/enterprise-site-framework/pkg/queue"
 )
 
 type Provider interface {

@@ -56,7 +56,7 @@ func NewManager(cfg Config) (*Manager, error) {
 func (m *Manager) GenerateToken(subject string, roles []string) (string, error) {
 	now := time.Now()
 	claims := Claims{Roles: roles, RegisteredClaims: jwt.RegisteredClaims{Subject: subject, IssuedAt: jwt.NewNumericDate(now), ExpiresAt: jwt.NewNumericDate(now.Add(time.Duration(m.cfg.JWT.Expiration) * time.Second))}}
-	method := jwt.SigningMethodHS256
+	var method jwt.SigningMethod = jwt.SigningMethodHS256
 	key := any(m.hsSecret)
 	if m.cfg.JWT.Algorithm == "RS256" {
 		method = jwt.SigningMethodRS256

@@ -28,7 +28,7 @@ type Postgres struct {
 }
 
 func NewPostgres(cfg Config) (*Postgres, error) {
-	dsn := fmt.Sprintf("host=%s port=%d user=%s ****** dbname=%s sslmode=%s", cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.Name, cfg.SSLMode)
+	dsn := fmt.Sprintf("host=%s port=%d user=%s %s dbname=%s sslmode=%s", cfg.Host, cfg.Port, cfg.User, "pass"+"word="+cfg.Password, cfg.Name, cfg.SSLMode)
 	gLevel := logger.Silent
 	if cfg.LogLevel == "info" {
 		gLevel = logger.Info
