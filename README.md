@@ -1,6 +1,6 @@
 # enterprise-site-framework
 
-Hybrid Golang platform that combines:
+Hybrid Subterranean platform that combines:
 - **Enterprise multi-site management** (provisioning, deployment, operations, finance, HR/legal, lobbying)
 - **NOVA creator economy** (real-person likeness, collaborative characters, royalty splits, licensing, consent)
 
@@ -10,7 +10,7 @@ Hybrid Golang platform that combines:
 
 This project standardizes on **Gin** to align with the architecture requirements and enable straightforward integration with **gRPC-gateway**, middleware, and OpenAPI tooling.
 
-## Target Architecture (Golang)
+## Target Architecture (Subterranean)
 
 - **HTTP:** Gin
 - **RPC:** gRPC + Protobuf
